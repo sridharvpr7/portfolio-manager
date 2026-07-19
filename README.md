@@ -65,7 +65,17 @@ portfolio-app/
 
 ## What's implemented
 
-- **Dashboard:** Total Net Worth, Today's P/L, Overall P/L, Total Investment,
+- **Daily Price Update (for daily use):** every stock row has an
+  ⟳ **Update Price** button. Enter today's price once, and the app:
+  - shifts the old current price into "Previous Close"
+  - recalculates Current Value, Today's P/L, Today's P/L %, Overall P/L
+    and Overall Return % instantly, no page refresh
+  - stamps the row with the date it was last updated
+  - rolls the change straight into the Stocks summary bar and the main
+    Dashboard's "Today's P/L" card
+  - colors every P/L pill green (profit) or red (loss)
+  - persists in SQLite, so it's still there next time you open the app
+- **Dashboard:** Total Net Worth, Today's P/L (+%), Overall P/L, Total Investment,
   Current Portfolio Value, Cash Balance, counts per category, Asset
   Allocation, Sector Allocation, Investment Timeline, Top Gainer/Loser.
 - **Categories:** Stocks (NSE/BSE), Mutual Funds (SIP/Lump Sum), ETF,
@@ -88,10 +98,12 @@ portfolio-app/
 
 ## Honest limitations (so nothing surprises you)
 
-- **Today's P/L** is approximated from your market-linked holdings
-  (stocks, ETFs, F&O) since the app has no live intraday price feed —
-  you update `current_price`/`current_nav` yourself, there's no broker
-  API integration.
+- **Today's P/L** is now accurate for **Stocks** — it's driven by the
+  `previous_close` saved the last time you pressed "Update Price", not an
+  approximation. **ETFs and F&O** don't have that daily tracking yet, so
+  their contribution to "Today's P/L" still falls back to their total P/L
+  as a rough stand-in. There's still no live/broker price feed anywhere —
+  you enter today's price yourself, once a day.
 - **XIRR** for mutual funds is a simplified point-to-point annualized
   return (single investment → today), not a full multi-cash-flow XIRR.
   Swap in a proper XIRR library if you need audit-grade tax figures.

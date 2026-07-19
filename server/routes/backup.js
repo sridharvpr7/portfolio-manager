@@ -9,7 +9,7 @@ const TABLES = ['stocks', 'mutual_funds', 'etfs', 'fno', 'other_assets'];
 
 router.get('/export', (req, res) => {
   const backup = { exported_at: new Date().toISOString(), data: {} };
-  TABLES.forEach(t => { backup.data[t] = db.prepare(`SELECT * FROM ${t} WHERE user_id = ?`).all(req.session.userId); });
+  TABLES.forEach(t => { backup.data[t] = db.prepare(`SELECT * FROM ${t}`).all(); });
   res.setHeader('Content-Disposition', 'attachment; filename="portfolio-backup.json"');
   res.json(backup);
 });
@@ -23,12 +23,11 @@ router.post('/import', (req, res) => {
   const importAll = db.transaction(() => {
     TABLES.forEach(t => {
       if (!Array.isArray(data[t])) return;
-      db.prepare(`DELETE FROM ${t} WHERE user_id = ?`).run(req.session.userId);
+      db.prepare(`DELETE FROM ${t}`).run();
       data[t].forEach(row => {
-        const cols = Object.keys(row).filter(c => c !== 'id' && c !== 'user_id');
-        cols.push('user_id');
+        const cols = Object.keys(row).filter(c => c !== 'id');
         const placeholders = cols.map(() => '?').join(', ');
-        const values = cols.map(c => c === 'user_id' ? req.session.userId : row[c]);
+        const values = cols.map(c => row[c]);
         db.prepare(`INSERT INTO ${t} (${cols.join(', ')}) VALUES (${placeholders})`).run(...values);
       });
     });

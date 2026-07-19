@@ -40,6 +40,7 @@ const API = {
     list: () => API.get('/stocks'),
     create: (d) => API.post('/stocks', d),
     update: (id, d) => API.put(`/stocks/${id}`, d),
+    updatePrice: (id, current_price) => API.put(`/stocks/${id}/price`, { current_price }),
     remove: (id) => API.del(`/stocks/${id}`)
   },
   // Mutual funds

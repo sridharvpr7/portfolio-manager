@@ -19,7 +19,7 @@ const DashboardView = {
     el.innerHTML = `
       <div class="grid grid-cards">
         ${this.card('fa-sack-dollar', 'Total Net Worth', UI.currency(summary.total_net_worth), null, true, 'primary')}
-        ${this.card('fa-bolt', "Today's P/L", UI.currency(summary.todays_pnl), summary.todays_pnl >= 0 ? 'up' : 'down')}
+        ${this.card('fa-bolt', "Today's P/L", UI.currency(summary.todays_pnl), summary.todays_pnl >= 0 ? 'up' : 'down', false, null, UI.pct(summary.todays_pnl_pct))}
         ${this.card('fa-chart-line', 'Overall P/L', UI.currency(summary.overall_pnl), summary.overall_pnl >= 0 ? 'up' : 'down', false, null, UI.pct(summary.overall_return_pct))}
         ${this.card('fa-vault', 'Total Investment', UI.currency(summary.total_investment))}
         ${this.card('fa-wallet', 'Current Portfolio Value', UI.currency(summary.current_portfolio_value))}

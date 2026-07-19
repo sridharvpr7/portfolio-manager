@@ -7,35 +7,25 @@ const bcrypt = require('bcryptjs');
 const db = require('../db/database');
 
 router.get('/status', (req, res) => {
-  const loggedIn = !!(req.session && req.session.userId);
-  let username = null;
-  if (loggedIn) {
-    const user = db.prepare('SELECT username FROM users WHERE id = ?').get(req.session.userId);
-    if (user) username = user.username;
-  }
+  const userExists = !!db.prepare('SELECT id FROM users LIMIT 1').get();
   res.json({
-    loggedIn,
-    username
+    loggedIn: !!(req.session && req.session.userId),
+    setupRequired: !userExists
   });
 });
 
 router.post('/register', (req, res) => {
+  const existing = db.prepare('SELECT id FROM users LIMIT 1').get();
+  if (existing) return res.status(400).json({ error: 'A user already exists. Please log in instead.' });
+
   const { username, password } = req.body;
   if (!username || !password || password.length < 6) {
     return res.status(400).json({ error: 'Username and a password of at least 6 characters are required.' });
   }
-
-  try {
-    const hash = bcrypt.hashSync(password, 10);
-    const info = db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)').run(username, hash);
-    req.session.userId = info.lastInsertRowid;
-    res.status(201).json({ success: true });
-  } catch (err) {
-    if (err.message && err.message.includes('UNIQUE constraint failed')) {
-      return res.status(400).json({ error: 'Username already exists. Please choose a different one.' });
-    }
-    return res.status(500).json({ error: 'Registration failed: ' + err.message });
-  }
+  const hash = bcrypt.hashSync(password, 10);
+  const info = db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)').run(username, hash);
+  req.session.userId = info.lastInsertRowid;
+  res.status(201).json({ success: true });
 });
 
 router.post('/login', (req, res) => {

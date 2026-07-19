@@ -29,7 +29,6 @@ CREATE TABLE IF NOT EXISTS users (
 db.exec(`
 CREATE TABLE IF NOT EXISTS stocks (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   exchange TEXT NOT NULL,           -- NSE / BSE
   stock_name TEXT NOT NULL,
   symbol TEXT NOT NULL,
@@ -37,6 +36,8 @@ CREATE TABLE IF NOT EXISTS stocks (
   quantity REAL NOT NULL,
   avg_buy_price REAL NOT NULL,
   current_price REAL DEFAULT 0,
+  previous_close REAL DEFAULT 0,    -- yesterday's price, used for Today's P/L
+  price_updated_at TEXT,            -- date the price was last refreshed (YYYY-MM-DD)
   broker TEXT,
   purchase_date TEXT,
   brokerage REAL DEFAULT 0,
@@ -46,11 +47,25 @@ CREATE TABLE IF NOT EXISTS stocks (
 );
 `);
 
+// ---------- MIGRATION: add new columns to a stocks table created by an
+// older version of the app, without touching any existing data. ----------
+(function migrateStocksTable() {
+  const existingCols = db.prepare('PRAGMA table_info(stocks)').all().map(c => c.name);
+  if (!existingCols.includes('previous_close')) {
+    db.exec('ALTER TABLE stocks ADD COLUMN previous_close REAL DEFAULT 0');
+    // Seed previous_close with current_price so Today's P/L starts at 0
+    // instead of showing a false jump for existing holdings.
+    db.exec('UPDATE stocks SET previous_close = current_price WHERE previous_close IS NULL OR previous_close = 0');
+  }
+  if (!existingCols.includes('price_updated_at')) {
+    db.exec('ALTER TABLE stocks ADD COLUMN price_updated_at TEXT');
+  }
+})();
+
 // ---------- MUTUAL FUNDS ----------
 db.exec(`
 CREATE TABLE IF NOT EXISTS mutual_funds (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   fund_name TEXT NOT NULL,
   amc TEXT,
   category TEXT,
@@ -71,7 +86,6 @@ CREATE TABLE IF NOT EXISTS mutual_funds (
 db.exec(`
 CREATE TABLE IF NOT EXISTS etfs (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   etf_name TEXT NOT NULL,
   quantity REAL NOT NULL,
   avg_price REAL NOT NULL,
@@ -87,7 +101,6 @@ CREATE TABLE IF NOT EXISTS etfs (
 db.exec(`
 CREATE TABLE IF NOT EXISTS fno (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   instrument TEXT NOT NULL,
   segment TEXT NOT NULL,            -- Future / Option
   option_type TEXT,                 -- Call / Put (nullable for futures)
@@ -109,7 +122,6 @@ CREATE TABLE IF NOT EXISTS fno (
 db.exec(`
 CREATE TABLE IF NOT EXISTS other_assets (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   asset_type TEXT NOT NULL,         -- Gold / Bonds / Cash
   name TEXT NOT NULL,
   invested_amount REAL NOT NULL,
@@ -125,10 +137,8 @@ CREATE TABLE IF NOT EXISTS other_assets (
 // ---------- NOTIFICATIONS SETTINGS ----------
 db.exec(`
 CREATE TABLE IF NOT EXISTS settings (
-  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  key TEXT NOT NULL,
-  value TEXT,
-  PRIMARY KEY (user_id, key)
+  key TEXT PRIMARY KEY,
+  value TEXT
 );
 `);
 

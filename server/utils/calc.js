@@ -12,12 +12,24 @@ function withStockCalcs(row) {
   const currentValue = row.quantity * (row.current_price || 0);
   const pnl = currentValue - investment;
   const returnPct = investment !== 0 ? (pnl / investment) * 100 : 0;
+
+  // Today's P/L compares current_price against previous_close (yesterday's
+  // saved price), independent of the buy price. Until a price update has
+  // been recorded, previous_close mirrors current_price so this is 0.
+  const prevClose = row.previous_close || 0;
+  const dailyChange = (row.current_price || 0) - prevClose;
+  const dailyPnl = row.quantity * dailyChange;
+  const dailyPnlPct = prevClose !== 0 ? (dailyChange / prevClose) * 100 : 0;
+
   return {
     ...row,
     investment: round2(investment),
     current_value: round2(currentValue),
     pnl: round2(pnl),
-    return_pct: round2(returnPct)
+    return_pct: round2(returnPct),
+    daily_change: round2(dailyChange),
+    daily_pnl: round2(dailyPnl),
+    daily_pnl_pct: round2(dailyPnlPct)
   };
 }
 

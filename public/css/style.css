@@ -175,22 +175,6 @@ html, body {
 .nav-item.logout { margin-top: 12px; color: var(--loss); }
 .nav-item.logout i { color: var(--loss); }
 
-.user-profile {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  margin-top: auto;
-  border-top: 1px solid var(--glass-border);
-  font-size: 13.8px;
-  font-weight: 500;
-  color: var(--text-0);
-}
-.user-profile i {
-  font-size: 18px;
-  color: var(--primary-2);
-}
-
 .main { flex: 1; padding: 28px 34px 60px; min-width: 0; }
 
 .topbar {
@@ -392,6 +376,8 @@ tbody tr:hover { background: rgba(255,255,255,0.025); }
 }
 .row-actions button:hover { color: var(--text-0); background: var(--glass-strong); }
 .row-actions button.danger:hover { color: var(--loss); }
+.row-actions button.update-price-btn { color: var(--primary-2); border-color: rgba(34,211,238,0.35); }
+.row-actions button.update-price-btn:hover { background: rgba(34,211,238,0.12); color: var(--primary-2); }
 
 /* ---------- Modal / Form ---------- */
 .modal-backdrop {

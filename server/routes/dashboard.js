@@ -9,12 +9,12 @@ const {
   round2, withStockCalcs, withMfCalcs, withEtfCalcs, withFnoCalcs, withOtherCalcs
 } = require('../utils/calc');
 
-function getAll(userId) {
-  const stocks = db.prepare('SELECT * FROM stocks WHERE user_id = ?').all(userId).map(withStockCalcs);
-  const mfs = db.prepare('SELECT * FROM mutual_funds WHERE user_id = ?').all(userId).map(withMfCalcs);
-  const etfs = db.prepare('SELECT * FROM etfs WHERE user_id = ?').all(userId).map(withEtfCalcs);
-  const fno = db.prepare('SELECT * FROM fno WHERE user_id = ?').all(userId).map(withFnoCalcs);
-  const other = db.prepare('SELECT * FROM other_assets WHERE user_id = ?').all(userId).map(withOtherCalcs);
+function getAll() {
+  const stocks = db.prepare('SELECT * FROM stocks').all().map(withStockCalcs);
+  const mfs = db.prepare('SELECT * FROM mutual_funds').all().map(withMfCalcs);
+  const etfs = db.prepare('SELECT * FROM etfs').all().map(withEtfCalcs);
+  const fno = db.prepare('SELECT * FROM fno').all().map(withFnoCalcs);
+  const other = db.prepare('SELECT * FROM other_assets').all().map(withOtherCalcs);
   return { stocks, mfs, etfs, fno, other };
 }
 
@@ -23,7 +23,7 @@ function sumBy(arr, field) {
 }
 
 router.get('/summary', (req, res) => {
-  const { stocks, mfs, etfs, fno, other } = getAll(req.session.userId);
+  const { stocks, mfs, etfs, fno, other } = getAll();
 
   const cash = other.filter(o => o.asset_type === 'Cash');
   const gold = other.filter(o => o.asset_type === 'Gold');
@@ -43,9 +43,15 @@ router.get('/summary', (req, res) => {
   const overallPnl = round2(currentValue - totalInvestment);
   const overallReturnPct = totalInvestment !== 0 ? round2((overallPnl / totalInvestment) * 100) : 0;
 
-  // "Today's P/L" is approximated as the P/L of market-linked holdings
-  // (stocks, ETFs, F&O) since MFs/gold/bonds don't have an intraday price feed here.
-  const todaysPnl = round2(sumBy(stocks, 'pnl') + sumBy(etfs, 'pnl') + sumBy(fno, 'pnl'));
+  // Today's P/L: stocks use the real day-over-day daily_pnl (current_price
+  // vs. previous_close, updated via the "Update Price" button). ETFs and
+  // F&O don't track a previous close yet, so they still fall back to their
+  // total P/L as a rough approximation.
+  const todaysPnl = round2(sumBy(stocks, 'daily_pnl') + sumBy(etfs, 'pnl') + sumBy(fno, 'pnl'));
+  const todaysPnlPct = (() => {
+    const stockInvestment = sumBy(stocks, 'investment');
+    return stockInvestment !== 0 ? round2((sumBy(stocks, 'daily_pnl') / stockInvestment) * 100) : 0;
+  })();
 
   // Asset allocation
   const assetAllocation = [
@@ -87,6 +93,7 @@ router.get('/summary', (req, res) => {
   res.json({
     total_net_worth: netWorth,
     todays_pnl: todaysPnl,
+    todays_pnl_pct: todaysPnlPct,
     overall_pnl: overallPnl,
     overall_return_pct: overallReturnPct,
     total_investment: totalInvestment,
@@ -106,7 +113,7 @@ router.get('/summary', (req, res) => {
 
 // Monthly investment timeline (stocks + MFs + ETFs, grouped by purchase month)
 router.get('/timeline', (req, res) => {
-  const { stocks, mfs, etfs } = getAll(req.session.userId);
+  const { stocks, mfs, etfs } = getAll();
   const monthMap = {};
 
   function addToMonth(dateStr, amount) {

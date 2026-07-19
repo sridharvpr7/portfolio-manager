@@ -29,7 +29,6 @@ const App = {
 
   async init() {
     this.bindAuthForm();
-    this.bindAuthToggle();
     this.bindNav();
     this.bindTheme();
     this.bindSearch();
@@ -37,13 +36,12 @@ const App = {
     const theme = localStorage.getItem('pm-theme') || 'dark';
     this.setTheme(theme, false);
 
-    this.isRegisterMode = false;
-    this.paintAuthScreen();
-
     try {
       const status = await API.authStatus();
+      this.isRegisterMode = status.setupRequired;
+      this.paintAuthScreen();
       if (status.loggedIn) {
-        this.showApp(status.username);
+        this.showApp();
       } else {
         this.showAuth();
       }
@@ -58,25 +56,6 @@ const App = {
       ? 'Set up local authentication to secure your portfolio'
       : 'Log in to your local portfolio vault';
     document.getElementById('auth-submit').textContent = this.isRegisterMode ? 'Create Account' : 'Log In';
-
-    const toggleBtn = document.getElementById('auth-toggle-btn');
-    if (toggleBtn) {
-      toggleBtn.parentElement.innerHTML = this.isRegisterMode
-        ? 'Already have an account? <a id="auth-toggle-btn">Log In</a>'
-        : 'Don\'t have an account? <a id="auth-toggle-btn">Sign Up</a>';
-      this.bindAuthToggle();
-    }
-  },
-
-  bindAuthToggle() {
-    const toggleBtn = document.getElementById('auth-toggle-btn');
-    if (toggleBtn) {
-      toggleBtn.onclick = (e) => {
-        e.preventDefault();
-        this.isRegisterMode = !this.isRegisterMode;
-        this.paintAuthScreen();
-      };
-    }
   },
 
   bindAuthForm() {
@@ -92,7 +71,7 @@ const App = {
         } else {
           await API.login(username, password);
         }
-        this.showApp(username);
+        this.showApp();
       } catch (err) {
         errorEl.textContent = err.message;
       }
@@ -104,15 +83,9 @@ const App = {
     document.getElementById('app').classList.add('hidden');
   },
 
-  async showApp(username) {
+  async showApp() {
     document.getElementById('auth-screen').classList.add('hidden');
     document.getElementById('app').classList.remove('hidden');
-
-    const userDisplay = document.getElementById('user-display-name');
-    if (userDisplay) {
-      userDisplay.textContent = username || 'Guest';
-    }
-
     document.getElementById('logout-btn').onclick = async () => {
       await API.logout();
       location.reload();
