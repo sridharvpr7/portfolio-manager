@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Portfolio Manager | India</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ============ AUTH SCREEN ============ -->
+<div id="auth-screen" class="auth-screen">
+  <div class="auth-card glass">
+    <div class="auth-logo"><i class="fa-solid fa-chart-line"></i> <span>Portfolio<b>Manager</b></span></div>
+    <h1 id="auth-title">Welcome back</h1>
+    <p id="auth-sub" class="auth-sub">Log in to your local portfolio vault</p>
+    <form id="auth-form">
+      <label>Username</label>
+      <input type="text" id="auth-username" autocomplete="username" required />
+      <label>Password</label>
+      <input type="password" id="auth-password" autocomplete="current-password" required />
+      <p id="auth-error" class="auth-error"></p>
+      <button type="submit" class="btn-primary" id="auth-submit">Log In</button>
+      <p class="auth-switch">Don't have an account? <a id="auth-toggle-btn">Sign Up</a></p>
+    </form>
+  </div>
+</div>
+
+<!-- ============ APP SHELL ============ -->
+<div id="app" class="app hidden">
+
+  <aside class="sidebar glass">
+    <div class="brand"><i class="fa-solid fa-chart-line"></i><span>Portfolio<b>Manager</b></span></div>
+    <nav class="nav">
+      <button class="nav-item active" data-view="dashboard"><i class="fa-solid fa-gauge-high"></i> Dashboard</button>
+      <button class="nav-item" data-view="stocks"><i class="fa-solid fa-building-columns"></i> Stocks</button>
+      <button class="nav-item" data-view="mutualfunds"><i class="fa-solid fa-layer-group"></i> Mutual Funds</button>
+      <button class="nav-item" data-view="etf"><i class="fa-solid fa-cubes"></i> ETF</button>
+      <button class="nav-item" data-view="fno"><i class="fa-solid fa-arrow-trend-up"></i> F&amp;O</button>
+      <button class="nav-item" data-view="other"><i class="fa-solid fa-coins"></i> Gold / Bonds / Cash</button>
+      <button class="nav-item" data-view="analysis"><i class="fa-solid fa-chart-pie"></i> Analysis</button>
+      <button class="nav-item" data-view="reports"><i class="fa-solid fa-file-invoice"></i> Reports</button>
+      <button class="nav-item" data-view="settings"><i class="fa-solid fa-gear"></i> Settings</button>
+    </nav>
+    <div class="user-profile">
+      <i class="fa-solid fa-circle-user"></i>
+      <span id="user-display-name">Guest</span>
+    </div>
+    <button id="logout-btn" class="nav-item logout"><i class="fa-solid fa-right-from-bracket"></i> Log Out</button>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-title">
+        <h1 id="view-title">Dashboard</h1>
+        <p id="view-sub" class="view-sub">Your entire net worth, in one place</p>
+      </div>
+      <div class="topbar-actions">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="global-search" placeholder="Search stock, fund, sector, broker..." />
+        </div>
+        <button class="icon-btn" id="theme-toggle" title="Toggle theme"><i class="fa-solid fa-moon"></i></button>
+      </div>
+    </header>
+
+    <section id="view-dashboard" class="view active"></section>
+    <section id="view-stocks" class="view"></section>
+    <section id="view-mutualfunds" class="view"></section>
+    <section id="view-etf" class="view"></section>
+    <section id="view-fno" class="view"></section>
+    <section id="view-other" class="view"></section>
+    <section id="view-analysis" class="view"></section>
+    <section id="view-reports" class="view"></section>
+    <section id="view-settings" class="view"></section>
+  </main>
+</div>
+
+<!-- ============ GENERIC MODAL ============ -->
+<div id="modal-backdrop" class="modal-backdrop hidden">
+  <div class="modal glass" id="modal-box"></div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="js/api.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/stocks.js"></script>
+<script src="js/mutualfunds.js"></script>
+<script src="js/etf.js"></script>
+<script src="js/fno.js"></script>
+<script src="js/other.js"></script>
+<script src="js/analysis.js"></script>
+<script src="js/reports.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
