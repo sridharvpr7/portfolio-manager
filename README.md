@@ -65,13 +65,14 @@ portfolio-app/
 
 ## What's implemented
 
-- **Daily Price Update (for daily use):** every stock row has an
-  ⟳ **Update Price** button. Enter today's price once, and the app:
-  - shifts the old current price into "Previous Close"
+- **Daily Price/NAV Update (for daily use):** every stock and mutual fund
+  row has an ⟳ **Update Price / Update NAV** button. Enter today's value
+  once, and the app:
+  - shifts the old price/NAV into "Previous Close"/"Previous NAV"
   - recalculates Current Value, Today's P/L, Today's P/L %, Overall P/L
     and Overall Return % instantly, no page refresh
   - stamps the row with the date it was last updated
-  - rolls the change straight into the Stocks summary bar and the main
+  - rolls the change straight into the category summary bar and the main
     Dashboard's "Today's P/L" card
   - colors every P/L pill green (profit) or red (loss)
   - persists in SQLite, so it's still there next time you open the app
@@ -98,12 +99,13 @@ portfolio-app/
 
 ## Honest limitations (so nothing surprises you)
 
-- **Today's P/L** is now accurate for **Stocks** — it's driven by the
-  `previous_close` saved the last time you pressed "Update Price", not an
-  approximation. **ETFs and F&O** don't have that daily tracking yet, so
-  their contribution to "Today's P/L" still falls back to their total P/L
-  as a rough stand-in. There's still no live/broker price feed anywhere —
-  you enter today's price yourself, once a day.
+- **Today's P/L** is now accurate for **Stocks and Mutual Funds** — driven
+  by the `previous_close`/`previous_nav` saved the last time you pressed
+  "Update Price"/"Update NAV", not an approximation. **ETFs and F&O**
+  don't have that daily tracking yet, so their contribution to "Today's
+  P/L" still falls back to their total P/L as a rough stand-in. There's
+  still no live/broker price feed anywhere — you enter today's
+  price/NAV yourself, once a day.
 - **XIRR** for mutual funds is a simplified point-to-point annualized
   return (single investment → today), not a full multi-cash-flow XIRR.
   Swap in a proper XIRR library if you need audit-grade tax figures.

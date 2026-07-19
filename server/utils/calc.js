@@ -39,6 +39,13 @@ function withMfCalcs(row) {
   const pnl = currentValue - investment;
   const returnPct = investment !== 0 ? (pnl / investment) * 100 : 0;
 
+  // Today's P/L compares current_nav against previous_nav (yesterday's
+  // saved NAV), same pattern as stocks' previous_close.
+  const prevNav = row.previous_nav || 0;
+  const dailyChange = (row.current_nav || 0) - prevNav;
+  const dailyPnl = row.units * dailyChange;
+  const dailyPnlPct = prevNav !== 0 ? (dailyChange / prevNav) * 100 : 0;
+
   // Simplified annualized return (absolute-return based approximation of XIRR
   // for a single lump-sum/SIP entry). A true XIRR needs full cash-flow
   // history; this gives a fair estimate from purchase date to today.
@@ -56,6 +63,9 @@ function withMfCalcs(row) {
     current_value: round2(currentValue),
     pnl: round2(pnl),
     return_pct: round2(returnPct),
+    daily_change: round2(dailyChange),
+    daily_pnl: round2(dailyPnl),
+    daily_pnl_pct: round2(dailyPnlPct),
     xirr
   };
 }

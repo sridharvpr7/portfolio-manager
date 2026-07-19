@@ -48,6 +48,7 @@ const API = {
     list: () => API.get('/mutualfunds'),
     create: (d) => API.post('/mutualfunds', d),
     update: (id, d) => API.put(`/mutualfunds/${id}`, d),
+    updateNav: (id, current_nav) => API.put(`/mutualfunds/${id}/nav`, { current_nav }),
     remove: (id) => API.del(`/mutualfunds/${id}`)
   },
   // ETF

@@ -43,14 +43,16 @@ router.get('/summary', (req, res) => {
   const overallPnl = round2(currentValue - totalInvestment);
   const overallReturnPct = totalInvestment !== 0 ? round2((overallPnl / totalInvestment) * 100) : 0;
 
-  // Today's P/L: stocks use the real day-over-day daily_pnl (current_price
-  // vs. previous_close, updated via the "Update Price" button). ETFs and
-  // F&O don't track a previous close yet, so they still fall back to their
-  // total P/L as a rough approximation.
-  const todaysPnl = round2(sumBy(stocks, 'daily_pnl') + sumBy(etfs, 'pnl') + sumBy(fno, 'pnl'));
+  // Today's P/L: stocks and mutual funds use the real day-over-day
+  // daily_pnl (current price/NAV vs. previous close/NAV, updated via the
+  // "Update Price"/"Update NAV" buttons). ETFs and F&O don't track a
+  // previous value yet, so they still fall back to their total P/L as a
+  // rough approximation.
+  const todaysPnl = round2(sumBy(stocks, 'daily_pnl') + sumBy(mfs, 'daily_pnl') + sumBy(etfs, 'pnl') + sumBy(fno, 'pnl'));
   const todaysPnlPct = (() => {
-    const stockInvestment = sumBy(stocks, 'investment');
-    return stockInvestment !== 0 ? round2((sumBy(stocks, 'daily_pnl') / stockInvestment) * 100) : 0;
+    const dailyTrackedInvestment = sumBy(stocks, 'investment') + sumBy(mfs, 'investment');
+    const dailyTrackedPnl = sumBy(stocks, 'daily_pnl') + sumBy(mfs, 'daily_pnl');
+    return dailyTrackedInvestment !== 0 ? round2((dailyTrackedPnl / dailyTrackedInvestment) * 100) : 0;
   })();
 
   // Asset allocation

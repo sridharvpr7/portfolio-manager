@@ -72,6 +72,8 @@ CREATE TABLE IF NOT EXISTS mutual_funds (
   folio_number TEXT,
   purchase_nav REAL NOT NULL,
   current_nav REAL DEFAULT 0,
+  previous_nav REAL DEFAULT 0,      -- yesterday's NAV, used for Today's P/L
+  nav_updated_at TEXT,              -- date the NAV was last refreshed (YYYY-MM-DD)
   units REAL NOT NULL,
   investment_mode TEXT,             -- SIP / Lump Sum
   investment_date TEXT,
@@ -81,6 +83,21 @@ CREATE TABLE IF NOT EXISTS mutual_funds (
   updated_at TEXT DEFAULT (datetime('now'))
 );
 `);
+
+// ---------- MIGRATION: add new columns to a mutual_funds table created by
+// an older version of the app, without touching any existing data. ----------
+(function migrateMutualFundsTable() {
+  const existingCols = db.prepare('PRAGMA table_info(mutual_funds)').all().map(c => c.name);
+  if (!existingCols.includes('previous_nav')) {
+    db.exec('ALTER TABLE mutual_funds ADD COLUMN previous_nav REAL DEFAULT 0');
+    // Seed previous_nav with current_nav so Today's P/L starts at 0 instead
+    // of showing a false jump for existing holdings.
+    db.exec('UPDATE mutual_funds SET previous_nav = current_nav WHERE previous_nav IS NULL OR previous_nav = 0');
+  }
+  if (!existingCols.includes('nav_updated_at')) {
+    db.exec('ALTER TABLE mutual_funds ADD COLUMN nav_updated_at TEXT');
+  }
+})();
 
 // ---------- ETF ----------
 db.exec(`
