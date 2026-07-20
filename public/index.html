@@ -29,6 +29,7 @@
 </div>
 
 <!-- ============ APP SHELL ============ -->
+<div id="sidebar-overlay" class="sidebar-overlay"></div>
 <div id="app" class="app hidden">
 
   <aside class="sidebar glass">
@@ -49,6 +50,7 @@
 
   <main class="main">
     <header class="topbar">
+      <button class="menu-toggle" id="menu-toggle" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
       <div class="topbar-title">
         <h1 id="view-title">Dashboard</h1>
         <p id="view-sub" class="view-sub">Your entire net worth, in one place</p>
@@ -80,6 +82,18 @@
 </div>
 
 <div id="toast-container" class="toast-container"></div>
+
+<!-- ============ MOBILE BOTTOM NAV ============ -->
+<nav class="bottom-nav" id="bottom-nav">
+  <button data-bottom-view="dashboard" class="active" aria-label="Dashboard"><i class="fa-solid fa-gauge-high"></i>Home</button>
+  <button data-bottom-view="stocks" aria-label="Stocks"><i class="fa-solid fa-building-columns"></i>Stocks</button>
+  <button data-bottom-view="analysis" aria-label="Analysis"><i class="fa-solid fa-chart-pie"></i>Analysis</button>
+  <button data-bottom-view="reports" aria-label="Reports"><i class="fa-solid fa-file-invoice"></i>Reports</button>
+  <button id="bottom-more-btn" aria-label="More"><i class="fa-solid fa-ellipsis"></i>More</button>
+</nav>
+
+<!-- ============ FLOATING ACTION BUTTON ============ -->
+<button class="fab" id="fab-btn" aria-label="Add"><i class="fa-solid fa-plus"></i></button>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>

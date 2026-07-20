@@ -5,6 +5,7 @@ const EtfView = {
 
   async render() {
     const el = document.getElementById('view-etf');
+    el.innerHTML = UI.skeletonTable();
     try {
       this.data = await API.etfs.list();
     } catch (e) {

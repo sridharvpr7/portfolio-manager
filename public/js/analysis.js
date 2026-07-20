@@ -4,6 +4,7 @@
 const AnalysisView = {
   async render() {
     const el = document.getElementById('view-analysis');
+    el.innerHTML = UI.skeletonCards(4);
     let summary, stocks, mfs, etfs, fno;
     try {
       [summary, stocks, mfs, etfs, fno] = await Promise.all([

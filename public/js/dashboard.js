@@ -3,7 +3,7 @@
 const DashboardView = {
   async render() {
     const el = document.getElementById('view-dashboard');
-    el.innerHTML = `<div class="dash-loading" style="color:var(--text-2);padding:40px 0;">Loading dashboard…</div>`;
+    el.innerHTML = UI.skeletonCards(9);
 
     let summary, timeline;
     try {
@@ -68,7 +68,7 @@ const DashboardView = {
     if (summary.sector_allocation.length) this.renderSectorAllocation(summary.sector_allocation);
     if (timeline.length) this.renderTimeline(timeline);
 
-    if (window.gsap) {
+    if (window.gsap && !window.prefersReducedMotion) {
       gsap.fromTo('.grid-cards .card', { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, stagger: 0.05, ease: 'power2.out' });
     }
   },

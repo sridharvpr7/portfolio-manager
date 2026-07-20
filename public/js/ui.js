@@ -40,11 +40,21 @@ const UI = {
     return `<div class="empty-state"><i class="fa-solid ${icon}"></i><h4>${UI.escapeHtml(title)}</h4><p>${UI.escapeHtml(sub)}</p></div>`;
   },
 
+  // Shimmering placeholder shown the instant a view switches in, before its
+  // fetch resolves — avoids a blank flash and signals "still loading" more
+  // clearly than plain text.
+  skeletonCards(count = 4) {
+    return `<div class="skeleton-cards">${Array.from({ length: count }).map(() => '<div class="skeleton skeleton-card"></div>').join('')}</div>`;
+  },
+  skeletonTable(rows = 5) {
+    return `<div class="table-wrap" style="padding:18px;">${Array.from({ length: rows }).map(() => '<div class="skeleton skeleton-line" style="height:20px;"></div>').join('')}</div>`;
+  },
+
   openModal(html) {
     document.getElementById('modal-box').innerHTML = html;
     const backdrop = document.getElementById('modal-backdrop');
     backdrop.classList.remove('hidden');
-    if (window.gsap) {
+    if (window.gsap && !window.prefersReducedMotion) {
       gsap.fromTo('#modal-box', { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.28, ease: 'power2.out' });
     }
   },

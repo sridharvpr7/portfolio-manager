@@ -5,6 +5,7 @@ const FnoView = {
 
   async render() {
     const el = document.getElementById('view-fno');
+    el.innerHTML = UI.skeletonTable();
     try {
       this.data = await API.fno.list();
     } catch (e) {

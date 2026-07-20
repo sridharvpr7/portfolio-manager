@@ -6,6 +6,7 @@ const OtherView = {
 
   async render() {
     const el = document.getElementById('view-other');
+    el.innerHTML = UI.skeletonTable();
     try {
       this.data = await API.other.list();
     } catch (e) {

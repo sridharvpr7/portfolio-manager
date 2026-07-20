@@ -184,6 +184,13 @@ html, body {
   margin-bottom: 26px;
   gap: 20px;
   flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  padding: 14px 0;
+  background: linear-gradient(var(--bg-0) 60%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 .topbar-title h1 { font-size: 26px; margin: 0; letter-spacing: -0.02em; }
 .view-sub { color: var(--text-1); font-size: 13.5px; margin: 4px 0 0; }
@@ -231,10 +238,6 @@ html, body {
 .grid-cards { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
 .grid-2 { grid-template-columns: 1fr 1fr; }
 .grid-3 { grid-template-columns: repeat(3, 1fr); }
-
-@media (max-width: 1000px) {
-  .grid-2, .grid-3 { grid-template-columns: 1fr; }
-}
 
 .card {
   border-radius: var(--radius-lg);
@@ -462,11 +465,183 @@ body.light html, body.light {
   background: radial-gradient(1200px 800px at 15% -10%, #eef1fb 0%, transparent 60%), var(--bg-0);
 }
 
-/* ---------- Responsive ---------- */
-@media (max-width: 880px) {
-  .sidebar { position: fixed; left: -260px; z-index: 90; transition: left .2s ease; }
-  .sidebar.open { left: 0; }
-  .main { padding: 20px; }
-  .search-box { min-width: 160px; }
-  .form-grid { grid-template-columns: 1fr; }
+/* =========================================================
+   RESPONSIVE SYSTEM
+   Breakpoints: Mobile ≤640px · Tablet 641–1024px ·
+   Laptop 1025–1440px (base styles above) ·
+   Desktop 1441–1919px · Ultra-wide ≥1920px · Foldables via
+   fluid clamp() typography + flex-wrap, no fixed break needed.
+   ========================================================= */
+
+/* Fluid type scale — shrinks/grows smoothly between breakpoints instead
+   of jumping, so foldables and in-between widths never look broken. */
+.topbar-title h1 { font-size: clamp(20px, 2.6vw, 26px); }
+.stat-value { font-size: clamp(18px, 2.2vw, 26px) !important; }
+.auth-card h1 { font-size: clamp(20px, 4vw, 24px); }
+
+/* Respect people who've asked their OS to reduce motion. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
 }
+
+/* Visible keyboard focus ring everywhere (WCAG) — only shows for keyboard
+   users, not mouse clicks, via :focus-visible. */
+button:focus-visible, input:focus-visible, select:focus-visible,
+textarea:focus-visible, a:focus-visible {
+  outline: 2px solid var(--primary-2);
+  outline-offset: 2px;
+}
+
+/* ---------- Mobile hamburger + sidebar overlay ---------- */
+.menu-toggle {
+  display: none;
+  width: 38px; height: 38px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  color: var(--text-1);
+  align-items: center; justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.sidebar-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(5, 7, 12, 0.55);
+  backdrop-filter: blur(2px);
+  z-index: 89;
+}
+.sidebar-overlay.show { display: block; }
+
+/* ---------- Floating Action Button (mobile "Add") ---------- */
+.fab {
+  display: none;
+  position: fixed;
+  right: 20px;
+  bottom: 84px; /* clears the bottom nav */
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, var(--primary-1), var(--primary-2));
+  color: #05060a;
+  font-size: 20px;
+  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.45);
+  align-items: center; justify-content: center;
+  cursor: pointer;
+  z-index: 60;
+  transition: transform .15s ease;
+}
+.fab:active { transform: scale(0.92); }
+
+/* ---------- Mobile bottom navigation ---------- */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 70;
+  padding: 8px 6px calc(8px + env(safe-area-inset-bottom));
+  background: var(--bg-1);
+  border-top: 1px solid var(--glass-border);
+  justify-content: space-around;
+  align-items: center;
+}
+.bottom-nav button {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  background: none; border: none;
+  color: var(--text-2);
+  font-size: 10.5px;
+  padding: 6px 2px;
+  cursor: pointer;
+  min-height: 44px; /* touch target */
+}
+.bottom-nav button i { font-size: 17px; }
+.bottom-nav button.active { color: var(--primary-2); }
+
+/* ---------- Loading skeletons ---------- */
+.skeleton {
+  background: linear-gradient(90deg, var(--glass) 25%, var(--glass-strong) 37%, var(--glass) 63%);
+  background-size: 400% 100%;
+  animation: skeletonShine 1.4s ease infinite;
+  border-radius: var(--radius-md);
+}
+@keyframes skeletonShine { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+.skeleton-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; }
+.skeleton-card { height: 96px; }
+.skeleton-line { height: 14px; margin-bottom: 10px; }
+
+/* =========================================================
+   ULTRA-WIDE ≥1920px — cap content width so cards/text don't
+   stretch into unreadable single lines on very large monitors.
+   ========================================================= */
+@media (min-width: 1920px) {
+  .main { max-width: 1760px; margin: 0 auto; }
+}
+
+/* =========================================================
+   DESKTOP 1441–1919px — slightly roomier cards
+   ========================================================= */
+@media (min-width: 1441px) and (max-width: 1919px) {
+  .grid-cards { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+}
+
+/* =========================================================
+   TABLET 641–1024px — sidebar becomes an overlay drawer,
+   grids collapse to a comfortable 2-up / 1-up layout
+   ========================================================= */
+@media (max-width: 1024px) {
+  .sidebar {
+    position: fixed; top: 0; left: -270px; z-index: 90;
+    transition: left .22s ease; height: 100vh;
+  }
+  .sidebar.open { left: 0; box-shadow: 30px 0 60px rgba(0,0,0,0.4); }
+  .menu-toggle { display: flex; }
+  .main { padding: 18px 18px 90px; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .grid-cards { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+  .search-box { min-width: 140px; }
+  .topbar { gap: 12px; }
+}
+
+/* =========================================================
+   MOBILE ≤640px — bottom nav + FAB replace the sidebar as the
+   primary navigation, tables scroll horizontally, forms stack,
+   modals go near-full-screen, everything gets bigger tap targets
+   ========================================================= */
+@media (max-width: 640px) {
+  .main { padding: 14px 14px 96px; }
+  .topbar { flex-wrap: wrap; }
+  .topbar-actions { width: 100%; }
+  .search-box { min-width: 0; flex: 1; }
+  .sidebar { display: none; }
+  .bottom-nav { display: flex; }
+  .fab { display: flex; }
+
+  .grid-cards { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .card { padding: 16px 16px; }
+  .stat-label { font-size: 11px; }
+
+  .toolbar { flex-direction: column; align-items: stretch; }
+  .btn-add { width: 100%; justify-content: center; }
+  .filter-chips { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; }
+  .filter-chips::-webkit-scrollbar { display: none; }
+  .chip { flex-shrink: 0; }
+
+  /* Tables: keep real <table> markup (no data loss / no rebuild), but
+     let them scroll horizontally with a visible momentum + shadow hint
+     instead of squashing columns unreadably. */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { min-width: 640px; }
+
+  .modal { max-width: 100%; width: 100%; max-height: 92vh; border-radius: 20px 20px 0 0; position: fixed; left: 0; right: 0; bottom: 0; margin: 0; }
+  .modal-backdrop { align-items: flex-end; }
+  .form-grid { grid-template-columns: 1fr; }
+
+  .toast-container { left: 12px; right: 12px; top: 12px; }
+  .toast { width: 100%; }
+
+  /* Bigger tap targets throughout on touch screens */
+  .nav-item, .chip, .row-actions button, .icon-btn, .btn-ghost, .btn-add { min-height: 44px; }
+}
+

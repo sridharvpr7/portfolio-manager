@@ -65,6 +65,21 @@ portfolio-app/
 
 ## What's implemented
 
+- **Responsive design (Phase 1 — just added):** true multi-breakpoint
+  layout for mobile (≤640px), tablet (641–1024px), laptop (1025–1440px,
+  the original base design), desktop (1441–1919px), and ultra-wide
+  (≥1920px, content is capped so it doesn't stretch into unreadable
+  single lines). Fluid `clamp()` typography scales smoothly between all
+  of them instead of jumping, so foldables and odd in-between widths hold
+  up too. On mobile: the sidebar becomes a slide-in drawer opened by a
+  hamburger button, a bottom navigation bar covers the 4 most-used views
+  plus a "More" button for the rest, a floating "+" action button opens
+  the current view's add-form, tables scroll horizontally instead of
+  squashing, modals dock to the bottom of the screen, and every
+  interactive element gets a 44px+ touch target. Shimmering loading
+  skeletons replace plain "Loading…" text everywhere. Keyboard shortcuts:
+  `/` focuses global search, `Esc` closes any open modal. Visible focus
+  rings and `prefers-reduced-motion` support are in for accessibility.
 - **Daily Price/NAV Update (for daily use):** every stock and mutual fund
   row has an ⟳ **Update Price / Update NAV** button. Enter today's value
   once, and the app:

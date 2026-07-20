@@ -6,6 +6,7 @@ const StocksView = {
 
   async render() {
     const el = document.getElementById('view-stocks');
+    el.innerHTML = UI.skeletonTable();
     try {
       this.data = await API.stocks.list();
     } catch (e) {

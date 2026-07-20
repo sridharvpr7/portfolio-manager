@@ -24,6 +24,20 @@ const Titles = {
   settings: ['Settings', 'Appearance, backup and notifications']
 };
 
+// Maps each view to the function that opens its "Add" form, so the mobile
+// FAB always does the right thing without every view module knowing about it.
+const FabActions = {
+  stocks: () => StocksView.openForm(),
+  mutualfunds: () => MutualFundsView.openForm(),
+  etf: () => EtfView.openForm(),
+  fno: () => FnoView.openForm(),
+  other: () => OtherView.openForm()
+};
+
+// Respect the OS-level "reduce motion" preference — checked by ui.js and
+// dashboard.js before firing any GSAP animation.
+window.prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 const App = {
   isRegisterMode: false,
 
@@ -32,6 +46,9 @@ const App = {
     this.bindNav();
     this.bindTheme();
     this.bindSearch();
+    this.bindMobileNav();
+    this.bindFab();
+    this.bindKeyboardShortcuts();
 
     const theme = localStorage.getItem('pm-theme') || 'dark';
     this.setTheme(theme, false);
@@ -93,6 +110,53 @@ const App = {
     await this.navigate('dashboard');
   },
 
+  bindMobileNav() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    document.getElementById('menu-toggle').addEventListener('click', () => this.openSidebar());
+    overlay.addEventListener('click', () => this.closeSidebar());
+
+    document.querySelectorAll('#bottom-nav [data-bottom-view]').forEach(btn => {
+      btn.addEventListener('click', () => this.navigate(btn.dataset.bottomView));
+    });
+    // "More" opens the full sidebar as a drawer so every view (Settings,
+    // Gold/Bonds/Cash, F&O, etc.) stays reachable on a small screen.
+    document.getElementById('bottom-more-btn').addEventListener('click', () => this.openSidebar());
+  },
+
+  openSidebar() {
+    document.querySelector('.sidebar').classList.add('open');
+    document.getElementById('sidebar-overlay').classList.add('show');
+  },
+  closeSidebar() {
+    document.querySelector('.sidebar').classList.remove('open');
+    document.getElementById('sidebar-overlay').classList.remove('show');
+  },
+
+  bindFab() {
+    document.getElementById('fab-btn').addEventListener('click', () => {
+      const activeView = document.querySelector('.nav-item.active')?.dataset.view;
+      const action = FabActions[activeView];
+      if (action) action();
+    });
+  },
+
+  bindKeyboardShortcuts() {
+    document.addEventListener('keydown', (e) => {
+      const typing = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName);
+      // "/" focuses global search, unless the user is already typing somewhere.
+      if (e.key === '/' && !typing) {
+        e.preventDefault();
+        document.getElementById('global-search').focus();
+      }
+      // Escape closes any open modal.
+      if (e.key === 'Escape' && !document.getElementById('modal-backdrop').classList.contains('hidden')) {
+        UI.closeModal();
+      }
+    });
+  },
+
   bindNav() {
     document.querySelectorAll('.nav-item[data-view]').forEach(btn => {
       btn.addEventListener('click', () => this.navigate(btn.dataset.view));
@@ -108,6 +172,16 @@ const App = {
     const [title, sub] = Titles[view];
     document.getElementById('view-title').textContent = title;
     document.getElementById('view-sub').textContent = sub;
+
+    // Keep the mobile bottom nav's active icon in sync (only 4 of the 9
+    // views live there directly; the rest are reached via "More").
+    document.querySelectorAll('#bottom-nav [data-bottom-view]').forEach(b => b.classList.toggle('active', b.dataset.bottomView === view));
+
+    // Show the FAB only on views that actually have an "Add" action.
+    const fab = document.getElementById('fab-btn');
+    fab.style.display = FabActions[view] ? '' : 'none';
+
+    this.closeSidebar();
 
     const module = Views[view];
     if (module && module.render) await module.render();

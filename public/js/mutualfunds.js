@@ -5,6 +5,7 @@ const MutualFundsView = {
 
   async render() {
     const el = document.getElementById('view-mutualfunds');
+    el.innerHTML = UI.skeletonTable();
     try {
       this.data = await API.mfs.list();
     } catch (e) {
