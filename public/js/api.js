@@ -56,6 +56,7 @@ const API = {
     list: () => API.get('/etf'),
     create: (d) => API.post('/etf', d),
     update: (id, d) => API.put(`/etf/${id}`, d),
+    updatePrice: (id, current_price) => API.put(`/etf/${id}/price`, { current_price }),
     remove: (id) => API.del(`/etf/${id}`)
   },
   // F&O
@@ -63,6 +64,7 @@ const API = {
     list: () => API.get('/fno'),
     create: (d) => API.post('/fno', d),
     update: (id, d) => API.put(`/fno/${id}`, d),
+    updatePrice: (id, current_price) => API.put(`/fno/${id}/price`, { current_price }),
     remove: (id) => API.del(`/fno/${id}`)
   },
   // Other assets (Gold/Bonds/Cash)
@@ -70,6 +72,7 @@ const API = {
     list: (type) => API.get('/other' + (type ? `?asset_type=${encodeURIComponent(type)}` : '')),
     create: (d) => API.post('/other', d),
     update: (id, d) => API.put(`/other/${id}`, d),
+    updateValue: (id, current_value) => API.put(`/other/${id}/value`, { current_value }),
     remove: (id) => API.del(`/other/${id}`)
   },
 

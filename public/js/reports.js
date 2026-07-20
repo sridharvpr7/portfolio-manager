@@ -48,6 +48,7 @@ const ReportsView = {
         ['Total Net Worth', UI.currency(summary.total_net_worth)],
         ["Today's P/L", UI.currency(summary.todays_pnl)],
         ['Overall P/L', UI.currency(summary.overall_pnl) + ` (${UI.pct(summary.overall_return_pct)})`],
+        ['Portfolio XIRR (annualized)', summary.portfolio_xirr !== null ? UI.pct(summary.portfolio_xirr) : '—'],
         ['Total Investment', UI.currency(summary.total_investment)],
         ['Current Portfolio Value', UI.currency(summary.current_portfolio_value)],
         ['Cash Balance', UI.currency(summary.cash_balance)]
@@ -63,8 +64,8 @@ const ReportsView = {
       ];
       this.printTable(title, ['Category', 'Profit / Loss'], rows);
     } else if (id === 'capital-gain') {
-      rows = stocks.map(s => [s.stock_name, UI.currency(s.investment), UI.currency(s.current_value), UI.currency(s.pnl)]);
-      this.printTable(title, ['Stock', 'Investment', 'Current Value', 'Gain/Loss'], rows);
+      rows = stocks.map(s => [s.stock_name, UI.currency(s.investment), UI.currency(s.current_value), UI.currency(s.pnl), s.xirr !== null ? s.xirr + '%' : '—']);
+      this.printTable(title, ['Stock', 'Investment', 'Current Value', 'Gain/Loss', 'XIRR'], rows);
     } else if (id === 'mf') {
       rows = mfs.map(m => [m.fund_name, m.units, UI.currency(m.investment), UI.currency(m.current_value), UI.currency(m.pnl), m.xirr !== null ? m.xirr + '%' : '—']);
       this.printTable(title, ['Fund', 'Units', 'Investment', 'Current Value', 'P/L', 'XIRR'], rows);
@@ -72,8 +73,8 @@ const ReportsView = {
       rows = fno.map(f => [f.instrument, f.segment, UI.currency(f.investment), UI.currency(f.current_value), UI.currency(f.pnl)]);
       this.printTable(title, ['Instrument', 'Segment', 'Investment', 'Current Value', 'P/L'], rows);
     } else if (id === 'stocks') {
-      rows = stocks.map(s => [s.stock_name, s.symbol, s.exchange, s.quantity, UI.currency(s.avg_buy_price), UI.currency(s.current_price), UI.currency(s.pnl)]);
-      this.printTable(title, ['Name', 'Symbol', 'Exchange', 'Qty', 'Avg Price', 'LTP', 'P/L'], rows);
+      rows = stocks.map(s => [s.stock_name, s.symbol, s.exchange, s.quantity, UI.currency(s.avg_buy_price), UI.currency(s.current_price), UI.currency(s.pnl), s.xirr !== null ? s.xirr + '%' : '—']);
+      this.printTable(title, ['Name', 'Symbol', 'Exchange', 'Qty', 'Avg Price', 'LTP', 'P/L', 'XIRR'], rows);
     }
   },
 
@@ -107,8 +108,8 @@ const ReportsView = {
     let headers = [], rows = [], filename = id + '.csv';
 
     if (id === 'stocks') {
-      headers = ['Stock Name', 'Symbol', 'Exchange', 'Sector', 'Quantity', 'Avg Buy Price', 'Current Price', 'Investment', 'Current Value', 'P/L', 'Return %'];
-      rows = stocks.map(s => [s.stock_name, s.symbol, s.exchange, s.sector, s.quantity, s.avg_buy_price, s.current_price, s.investment, s.current_value, s.pnl, s.return_pct]);
+      headers = ['Stock Name', 'Symbol', 'Exchange', 'Sector', 'Quantity', 'Avg Buy Price', 'Current Price', 'Investment', 'Current Value', 'P/L', 'Return %', 'XIRR'];
+      rows = stocks.map(s => [s.stock_name, s.symbol, s.exchange, s.sector, s.quantity, s.avg_buy_price, s.current_price, s.investment, s.current_value, s.pnl, s.return_pct, s.xirr]);
     } else if (id === 'mf') {
       headers = ['Fund Name', 'AMC', 'Units', 'Purchase NAV', 'Current NAV', 'Investment', 'Current Value', 'P/L', 'XIRR'];
       rows = mfs.map(m => [m.fund_name, m.amc, m.units, m.purchase_nav, m.current_nav, m.investment, m.current_value, m.pnl, m.xirr]);

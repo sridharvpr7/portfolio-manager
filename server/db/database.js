@@ -107,12 +107,31 @@ CREATE TABLE IF NOT EXISTS etfs (
   quantity REAL NOT NULL,
   avg_price REAL NOT NULL,
   current_price REAL DEFAULT 0,
+  previous_price REAL DEFAULT 0,    -- yesterday's price, used for Today's P/L
+  price_updated_at TEXT,            -- date the price was last refreshed (YYYY-MM-DD)
+  purchase_date TEXT,
   broker TEXT,
   notes TEXT,
   created_at TEXT DEFAULT (datetime('now')),
   updated_at TEXT DEFAULT (datetime('now'))
 );
 `);
+
+// ---------- MIGRATION: add daily-update + XIRR columns to an etfs table
+// created by an older version of the app, without touching existing data. ----------
+(function migrateEtfsTable() {
+  const existingCols = db.prepare('PRAGMA table_info(etfs)').all().map(c => c.name);
+  if (!existingCols.includes('previous_price')) {
+    db.exec('ALTER TABLE etfs ADD COLUMN previous_price REAL DEFAULT 0');
+    db.exec('UPDATE etfs SET previous_price = current_price WHERE previous_price IS NULL OR previous_price = 0');
+  }
+  if (!existingCols.includes('price_updated_at')) {
+    db.exec('ALTER TABLE etfs ADD COLUMN price_updated_at TEXT');
+  }
+  if (!existingCols.includes('purchase_date')) {
+    db.exec('ALTER TABLE etfs ADD COLUMN purchase_date TEXT');
+  }
+})();
 
 // ---------- F&O (Futures & Options) ----------
 db.exec(`
@@ -128,12 +147,31 @@ CREATE TABLE IF NOT EXISTS fno (
   num_lots REAL NOT NULL,
   entry_price REAL NOT NULL,
   current_price REAL DEFAULT 0,
+  previous_price REAL DEFAULT 0,    -- yesterday's price, used for Today's P/L
+  price_updated_at TEXT,            -- date the price was last refreshed (YYYY-MM-DD)
+  entry_date TEXT,
   broker TEXT,
   notes TEXT,
   created_at TEXT DEFAULT (datetime('now')),
   updated_at TEXT DEFAULT (datetime('now'))
 );
 `);
+
+// ---------- MIGRATION: add daily-update columns to an fno table created by
+// an older version of the app, without touching any existing data. ----------
+(function migrateFnoTable() {
+  const existingCols = db.prepare('PRAGMA table_info(fno)').all().map(c => c.name);
+  if (!existingCols.includes('previous_price')) {
+    db.exec('ALTER TABLE fno ADD COLUMN previous_price REAL DEFAULT 0');
+    db.exec('UPDATE fno SET previous_price = current_price WHERE previous_price IS NULL OR previous_price = 0');
+  }
+  if (!existingCols.includes('price_updated_at')) {
+    db.exec('ALTER TABLE fno ADD COLUMN price_updated_at TEXT');
+  }
+  if (!existingCols.includes('entry_date')) {
+    db.exec('ALTER TABLE fno ADD COLUMN entry_date TEXT');
+  }
+})();
 
 // ---------- OTHER ASSETS (Gold, Bonds, Cash) ----------
 db.exec(`
@@ -143,6 +181,8 @@ CREATE TABLE IF NOT EXISTS other_assets (
   name TEXT NOT NULL,
   invested_amount REAL NOT NULL,
   current_value REAL DEFAULT 0,
+  previous_value REAL DEFAULT 0,    -- yesterday's value, used for Today's P/L
+  value_updated_at TEXT,            -- date the value was last refreshed (YYYY-MM-DD)
   broker TEXT,
   purchase_date TEXT,
   notes TEXT,
@@ -150,6 +190,19 @@ CREATE TABLE IF NOT EXISTS other_assets (
   updated_at TEXT DEFAULT (datetime('now'))
 );
 `);
+
+// ---------- MIGRATION: add daily-update columns to an other_assets table
+// created by an older version of the app, without touching any existing data. ----------
+(function migrateOtherAssetsTable() {
+  const existingCols = db.prepare('PRAGMA table_info(other_assets)').all().map(c => c.name);
+  if (!existingCols.includes('previous_value')) {
+    db.exec('ALTER TABLE other_assets ADD COLUMN previous_value REAL DEFAULT 0');
+    db.exec('UPDATE other_assets SET previous_value = current_value WHERE previous_value IS NULL OR previous_value = 0');
+  }
+  if (!existingCols.includes('value_updated_at')) {
+    db.exec('ALTER TABLE other_assets ADD COLUMN value_updated_at TEXT');
+  }
+})();
 
 // ---------- NOTIFICATIONS SETTINGS ----------
 db.exec(`

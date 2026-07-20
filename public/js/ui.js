@@ -21,6 +21,15 @@ const UI = {
     const up = Number(pnl) >= 0;
     return `<span class="pill ${up ? 'up' : 'down'}"><i class="fa-solid fa-caret-${up ? 'up' : 'down'}"></i> ${UI.currency(Math.abs(pnl))} (${UI.pct(pct)})</span>`;
   },
+  // Annualized return (XIRR/CAGR) badge. Renders a dash when there isn't
+  // enough data yet (no purchase/entry date recorded on the holding).
+  xirrBadge(xirr) {
+    if (xirr === null || xirr === undefined || isNaN(xirr)) {
+      return '<span class="cell-sub">—</span>';
+    }
+    const up = Number(xirr) >= 0;
+    return `<span class="pill ${up ? 'up' : 'down'}" title="Annualized return (XIRR)"><i class="fa-solid fa-chart-line"></i> ${UI.pct(xirr)}</span>`;
+  },
   escapeHtml(str) {
     if (str === null || str === undefined) return '';
     return String(str).replace(/[&<>"']/g, (m) => ({

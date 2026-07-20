@@ -43,16 +43,29 @@ router.get('/summary', (req, res) => {
   const overallPnl = round2(currentValue - totalInvestment);
   const overallReturnPct = totalInvestment !== 0 ? round2((overallPnl / totalInvestment) * 100) : 0;
 
-  // Today's P/L: stocks and mutual funds use the real day-over-day
-  // daily_pnl (current price/NAV vs. previous close/NAV, updated via the
-  // "Update Price"/"Update NAV" buttons). ETFs and F&O don't track a
-  // previous value yet, so they still fall back to their total P/L as a
-  // rough approximation.
-  const todaysPnl = round2(sumBy(stocks, 'daily_pnl') + sumBy(mfs, 'daily_pnl') + sumBy(etfs, 'pnl') + sumBy(fno, 'pnl'));
+  // Today's P/L: every asset type (stocks, MFs, ETFs, F&O, Other) now
+  // tracks a real day-over-day daily_pnl — current price/NAV/value vs.
+  // yesterday's saved snapshot, updated via each category's "Update
+  // Price"/"Update NAV"/"Update Value" button — so this is a true total,
+  // not an approximation.
+  const dailyTracked = [...stocks, ...mfs, ...etfs, ...fno, ...other];
+  const todaysPnl = round2(dailyTracked.reduce((s, r) => s + (Number(r.daily_pnl) || 0), 0));
   const todaysPnlPct = (() => {
-    const dailyTrackedInvestment = sumBy(stocks, 'investment') + sumBy(mfs, 'investment');
-    const dailyTrackedPnl = sumBy(stocks, 'daily_pnl') + sumBy(mfs, 'daily_pnl');
-    return dailyTrackedInvestment !== 0 ? round2((dailyTrackedPnl / dailyTrackedInvestment) * 100) : 0;
+    const investmentBase = sumBy(dailyTracked, 'investment');
+    return investmentBase !== 0 ? round2((todaysPnl / investmentBase) * 100) : 0;
+  })();
+
+  // Portfolio-level annualized return: investment-weighted average of each
+  // holding's own XIRR/CAGR. A true portfolio XIRR (solving across every
+  // holding's individual cash flows at once) needs per-transaction history,
+  // which the current holding-level schema doesn't store — this weighted
+  // average is the standard practical stand-in until that data exists.
+  const portfolioXirr = (() => {
+    const withXirr = dailyTracked.filter(r => r.xirr !== null && r.xirr !== undefined && r.investment > 0);
+    const totalInv = sumBy(withXirr, 'investment');
+    if (!totalInv) return null;
+    const weighted = withXirr.reduce((s, r) => s + r.xirr * r.investment, 0) / totalInv;
+    return round2(weighted);
   })();
 
   // Asset allocation
@@ -98,6 +111,8 @@ router.get('/summary', (req, res) => {
     todays_pnl_pct: todaysPnlPct,
     overall_pnl: overallPnl,
     overall_return_pct: overallReturnPct,
+    portfolio_xirr: portfolioXirr,
+    portfolio_cagr: portfolioXirr,
     total_investment: totalInvestment,
     current_portfolio_value: currentValue,
     cash_balance: sumBy(cash, 'current_value'),

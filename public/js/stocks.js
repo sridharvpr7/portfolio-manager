@@ -131,7 +131,7 @@ const StocksView = {
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>Stock</th><th>Exchange</th><th>Sector</th><th>Qty</th><th>Avg Buy</th><th>Prev Close</th><th>LTP</th><th>Today's P/L</th><th>Overall P/L</th><th></th>
+            <th>Stock</th><th>Exchange</th><th>Sector</th><th>Qty</th><th>Avg Buy</th><th>Prev Close</th><th>LTP</th><th>Today's P/L</th><th>Overall P/L</th><th>XIRR</th><th></th>
           </tr></thead>
           <tbody>
             ${rows.map(s => `
@@ -145,6 +145,7 @@ const StocksView = {
                 <td class="cell-mono">${UI.currency(s.current_price)}${s.price_updated_at ? `<div class="cell-sub">as of ${s.price_updated_at}</div>` : `<div class="cell-sub">not updated yet</div>`}</td>
                 <td>${UI.pnlPill(s.daily_pnl, s.daily_pnl_pct)}</td>
                 <td>${UI.pnlPill(s.pnl, s.return_pct)}</td>
+                <td>${UI.xirrBadge(s.xirr)}</td>
                 <td><div class="row-actions">
                   <button data-price="${s.id}" title="Update Price" class="update-price-btn"><i class="fa-solid fa-arrow-rotate-right"></i></button>
                   <button data-edit="${s.id}" title="Edit"><i class="fa-solid fa-pen"></i></button>
